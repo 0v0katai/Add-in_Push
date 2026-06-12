@@ -2,6 +2,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#define ALIGN_4K(addr) (((addr) + 4095) & ~4095)
+
 #define dtext(x, y, str) \
     PrintMini(&(int){x}, &(int){y}, str, 0x42, -1, 0, 0, 0, -1, 1, 0)
 
@@ -61,14 +63,14 @@ int main(void)
     __asm__("icbi @%0":: "r"(0xa0000000));
 
     uint32_t loadinfo[] = {
-        0x00000001, 0x00000001,  // Info format version
-        0x00000010, 0x8c400000,  // Start of an available RAM area
-        0x00000011, 0x8c700000,  // End of an available RAM area
+        0x00000001, 0x00000001,
+        0x00000010, ALIGN_4K(0x8c200000 + incoming_bytes),
+        0x00000011, 0x8c700000,
         0x00000000,
     };
 
     int (*code)(int sig, uint32_t *loadinfo) = (void *)0x8c200000;
-    int rc = code(0x4d504d30, loadinfo);
+    int rc = code(0x4d504d30 /* 'MPM0' */, loadinfo);
     (void)rc;
     
     return 0;
