@@ -1,6 +1,8 @@
 #include "casiowin.h"
+#include "iokbd.h"
 #include <stdint.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #define ALIGN_4K(addr) (((addr) + 4095) & ~4095)
 
@@ -19,10 +21,15 @@ void write_back_operand_cache(void *ptr, size_t size)
         __asm__ volatile("ocbwb @%0" :: "r"(ptr + offset));
 }
 
-int read_from_usb(unsigned char *out, int sz)
+int read_from_usb(uint8_t *out, int sz)
 {
-    while (USB_PollRX() == 0)
+    while (USB_PollRX() == 0) {
         OS_InnerWait_ms(25);
+        if (SH7305_IOKBD_ROW(0) == 1) {
+            USB_ForceClose(1);
+            return -1;
+        }
+    }
     short count = 0;
     int rc = USB_Read(out, sz, &count);
     (void)rc;
@@ -36,22 +43,31 @@ int main(void)
 
     message("Initiating Add-in Push...");
     Bdisp_PutDisp_DD();
-    while (USB_Open(0x20) == 5);
-
+    int status;
+    do {
+        status = USB_Open(0x20);
+        if (status == 10)
+            return 0;
+    } while (status == 5);
     USB_ClearRX();
-    USB_Write((unsigned char *)"USB loader ready", 0x11);
+
+    /* https://git.planet-casio.com/Lephenixnoir/fxsdk/src/commit/be54e37/fxlink/modes/push.c#L80 */
+    static const char handshake[] = "USB loader ready";
+    USB_Write((uint8_t *)handshake, sizeof(handshake));
 
     size_t incoming_bytes = 0;
-    read_from_usb((unsigned char *)&incoming_bytes, 4);
+    if (read_from_usb((uint8_t *)&incoming_bytes, 4) == -1)
+        return 0;
     if (incoming_bytes > 0x200000) {
         USB_ForceClose(1);
-        message("Input is too large!");
+        message("Input is too large! (max. 2 MB)");
         GetKey(&(int){0});
         return 0;
     }
 
     for (size_t offset = 0; offset < incoming_bytes; offset += 0x100)
-        read_from_usb((unsigned char *)(0x8c200000 + offset), 0x100);
+        if (read_from_usb((uint8_t *)(0x8c200000 + offset), 0x100) == -1)
+            return 0;
 
     USB_ForceClose(1);
 
