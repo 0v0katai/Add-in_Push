@@ -1,24 +1,20 @@
 #include "casiowin.h"
-#include "iokbd.h"
 #include "mmu.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdbool.h>
 
-#define dtext(x, y, str) \
-    PrintMini(&(int){x}, &(int){y}, str, 0x42, -1, 0, 0, 0, -1, 1, 0)
-
-void message(const char *str)
-{
-    Box2(1, 0);
-    dtext(40, 96, str);
-}
+#define dtext(x, y, color, str) \
+    PrintMini(&(int){x}, &(int){y}, str, 0x42, -1, 0, 0, color, -1, 1, 0)
 
 int read_bin(u8 *out, int sz)
 {
+    /* KEYSC register holding row #0, which is the AC key */
+    u16 volatile *KEYSC_KIUDATA0 = (void *)0xa44b0000;
+    
     while (USB_PollRX() == 0) {
         OS_InnerWait_ms(25);
-        if (SH7305_IOKBD_ROW(0) == 1)
+        if (*KEYSC_KIUDATA0 == 1)
             return -1;
     }
     short count = 0;
@@ -31,7 +27,9 @@ int main(void)
 {
     int key;
 
-    message("Initiating Add-in Push...");
+    Box2(2, 0);
+    dtext(40, 72, 0x0000, "Receiving add-in over USB...");
+    dtext(40, 96, 0x0841, "AC: Cancel");
     Bdisp_PutDisp_DD();
 
     int status;
@@ -99,7 +97,9 @@ int main(void)
   cleanup:
     USB_ForceClose(1);
     MMU_SetEnabled(false);
-    message("Aborted! Press MENU to exit.");
+    Box2(2, 0);
+    dtext(40, 72, 0x0000, "Aborted! Press MENU to return");
+    dtext(40, 96, 0x0000, "to the main menu.");
     while(true)
         GetKey(&key);
 
