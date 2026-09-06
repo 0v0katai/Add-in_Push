@@ -4,30 +4,21 @@ ENTRY(relocate)
 
 MEMORY
 {
-    rom (rx)    : o = 0x8c7f0000, l = 64k
-    ram (rwx)   : o = 0x08100000, l = 512k
-    ilram (rwx) : o = 0xe5200000, l = 4k
-    xyram (rwx) : o = 0xe500e000, l = 16k
+    ram (rwx) : o = 0x8c7f0000, l = 64k
 }
 
 SECTIONS
 {
-    _reloc = ORIGIN(rom) ;
-    _size = SIZEOF(.text) + SIZEOF(.rodata)
-          + SIZEOF(.data) + SIZEOF(.ilram)
-          + SIZEOF(.xyram) ;
-    _lword = _size / 4 ;
-
     .text : {
         *(.relocate)
         *(.pretext)
         *(.text .text.*)
-    } > rom
+    } > ram
 
     .rodata : SUBALIGN(4) {
         *(.rodata)
         *(.rodata.*)
-    } > rom
+    } > ram
 
     .bss : ALIGN(4) {
         _bbss = . ;
@@ -41,19 +32,8 @@ SECTIONS
         _sdata = . ;
         *(.data .data.*)
         _edata = . ;
-    } > ram AT> rom
+    } > ram
 
-    .ilram : ALIGN(4) {
-        _ilramld = LOADADDR(.ilram) ;
-        _silram = . ;
-        *(.ilram .ilram.*)
-        _eilram = . ;
-    } > ilram AT> rom
-
-    .xyram : ALIGN(4) {
-        _xyramld = LOADADDR(.xyram) ;
-        _sxyram = . ;
-        *(.xyram .xyram.*)
-        _exyram = . ;
-    } > xyram AT> rom
+    _reloc_target = ORIGIN(ram) ;
+    _reloc_size32 = ABSOLUTE(ALIGN(32) - ORIGIN(ram)) / 32 ;
 }
