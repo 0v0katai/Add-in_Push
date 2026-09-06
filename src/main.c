@@ -53,11 +53,6 @@ int main(void)
     void *rom_virt = (void *)0x00300000;
     void *ram_virt = (void *)0x08100000;
 
-    for (size_t pos = 0; pos < bin_size; pos += 0x100)
-        if (read_bin((u8 *)((u32)rom_phy + pos), 0x100) == -1)
-            goto cleanup;
-    USB_ForceClose(1);
-
     invalidateTLB();
     MMU_SetEnabled(true);
 
@@ -77,6 +72,14 @@ int main(void)
     /* Reset URC to 0 to avoid erasing the protected region */
     *MMUCR &= 0xffff03ff;
     __asm__("icbi @%0":: "r"(0xa0000000));
+
+    for (size_t pos = 0; pos < bin_size; pos += 0x100)
+        if (read_bin((u8 *)((u32)rom_virt + pos), 0x100) == -1)
+            goto cleanup;
+    USB_ForceClose(1);
+
+    for(size_t offset = 0; offset < bin_size; offset += 32)
+        __asm__ volatile("ocbwb @%0" :: "r"(rom_virt + offset));
 
     u32 volatile *CCR = (void *)0xff00001c;
     *CCR |= (1 << 11) // Instruction Cache Invalidate
