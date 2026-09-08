@@ -1,0 +1,3 @@
+[submodule "cli/cahute"]
+	path = cli/cahute
+	url = https://gitlab.com/cahute/cahute

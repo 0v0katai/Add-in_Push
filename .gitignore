@@ -1,5 +1,6 @@
 # Build files
 /build*/
+/cli/build*/
 /*.g1a
 /*.g3a
 
