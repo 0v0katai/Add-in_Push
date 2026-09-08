@@ -1,5 +1,5 @@
-#ifndef _LOADER_H
-#define _LOADER_H
+#ifndef _MMU_H
+#define _MMU_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -39,4 +39,4 @@ void invalidateTLB(void);
 void MMU_SetEnabled(bool enabled);
 void MMU_Map(void *virt, void *phys, int size, int URC);
 
-#endif /* _LOADER_H */
+#endif /* _MMU_H */
