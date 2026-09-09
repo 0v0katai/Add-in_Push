@@ -26,8 +26,10 @@ bash ./cli/build.sh <linux|win32|win64> [clean]
 2. Open the CLI executable. Drag and drop either G3A add-in or binary file.
 3. Press Enter key to confirm.
 
-## Notes
-
-The CLI supports all CASIO calculators that have the USB protocol.
+## Note
 
 The helper add-in only targets fx-CG50. Support for building against fx-CG100 is removed as [mpm.bin](https://git.planet-casio.com/PlaneteCasio/mpm) now integrates Add-in Push. Currently there is no plan for the fx-9860 and fx-CG10/20 support due to lacking of sufficient RAM capacity in these platforms.
+
+## License
+
+The CLI program is licensed under [GPLv3](cli/LICENSE.md), and the helper add-in is licensed under [MIT License](LICENSE.md).
