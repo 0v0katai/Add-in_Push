@@ -1,35 +1,18 @@
 cmake_minimum_required(VERSION 3.15)
 project(push LANGUAGES C)
 
-include(GenerateG1A)
 include(GenerateG3A)
-include(Fxconv)
 
-set(SOURCES
-  src/main.c
-  src/mmu.c
-  # ...
-)
-set(ASSETS
-  # ...
-)
-set(ASSETS_fx
-  # ...
-)
-set(ASSETS_cg
-  # ...
-)
+set(SOURCES src/main.c src/mmu.c)
 
-fxconv_declare_assets(${ASSETS} ${ASSETS_fx} ${ASSETS_cg} WITH_METADATA)
+add_executable(push ${SOURCES})
 
-add_executable(push ${SOURCES} ${ASSETS} ${ASSETS_${FXSDK_PLATFORM}})
-
-target_compile_options(push PRIVATE -I include
-                       -Wall -Wextra -Os -g -flto=auto)
+target_include_directories(push PRIVATE include)
+target_compile_options(push PRIVATE -Wall -Wextra -Os -g -flto=auto)
 target_link_options(push PRIVATE
-                    -L ${CMAKE_CURRENT_SOURCE_DIR}
-                    -T ${CMAKE_CURRENT_SOURCE_DIR}/prizm.ld
-                    -Wl,--print-memory-usage -Wl,-Map=map)
+  -L ${CMAKE_CURRENT_SOURCE_DIR}
+  -T ${CMAKE_CURRENT_SOURCE_DIR}/prizm.ld
+  -Wl,-print-memory-usage -Wl,-Map=map)
 target_link_libraries(push PRIVATE -lc -lgcc -lsyscall-cg)
 
 if("${FXSDK_PLATFORM_LONG}" STREQUAL fxCG50)
