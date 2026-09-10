@@ -10,8 +10,8 @@ This utility consists of 2 components: the CLI and the helper add-in. The CLI is
 
 Install the [prerequisite packages](https://next.cahute.org/guides/build/linux.html) for building Cahute in Linux, and the MinGW toolchain if you want to build against Windows. Then, run the bash script to build the CLI:
 
-```bash
-bash ./cli/build.sh <linux|win32|win64> [clean]
+```
+bash ./cli/build.sh <linux|win32|win64>
 ```
 
 ### Building helper add-in

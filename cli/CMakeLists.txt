@@ -1,41 +1,22 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.21)
 project(push-cli LANGUAGES C)
 
-include(ExternalProject)
+include(FetchContent)
 
-set(CAHUTE_BUILD_ARGS
-  -DCAHUTE_CLI=OFF
-  -DCAHUTE_SHARED=OFF
-  -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-  -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-)
+set(CMAKE_BUILD_TYPE MinSizeRel)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
+set(CAHUTE_CLI OFF CACHE BOOL "" FORCE)
+set(CAHUTE_SHARED OFF CACHE BOOL "" FORCE)
 
-if(CMAKE_TOOLCHAIN_FILE)
-  list(APPEND CAHUTE_BUILD_ARGS
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE})
-endif()
-
-set(CAHUTE_BUILD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cahute/build")
-
-ExternalProject_Add(cahute-build
-  SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cahute"
-  BINARY_DIR "${CAHUTE_BUILD_DIR}"
-  CMAKE_ARGS ${CAHUTE_BUILD_ARGS}
-  BUILD_BYPRODUCTS
-    "${CAHUTE_BUILD_DIR}/libcahute-static.a"
-  INSTALL_COMMAND ""
-)
-
-file(MAKE_DIRECTORY "${CAHUTE_BUILD_DIR}/include")
-add_library(cahute-static STATIC IMPORTED GLOBAL)
-set_target_properties(cahute-static PROPERTIES
-  IMPORTED_LOCATION "${CAHUTE_BUILD_DIR}/libcahute-static.a"
-  INTERFACE_INCLUDE_DIRECTORIES
-    "${CMAKE_CURRENT_SOURCE_DIR}/cahute/include;${CAHUTE_BUILD_DIR}/include"
-)
-add_dependencies(cahute-static cahute-build)
+FetchContent_Declare(cahute
+  GIT_REPOSITORY https://gitlab.com/cahute/cahute
+  GIT_TAG develop)
+FetchContent_MakeAvailable(cahute)
 
 add_executable(push-cli main.c)
+target_include_directories(push-cli PRIVATE
+  "${cahute_SOURCE_DIR}/include"
+  "${cahute_BINARY_DIR}/include")
 target_compile_options(push-cli PRIVATE -Os -flto=auto)
 target_compile_definitions(push-cli PRIVATE CAHUTE_STATIC=1)
 target_link_libraries(push-cli PRIVATE cahute-static)
@@ -49,5 +30,4 @@ endif()
 
 set_target_properties(push-cli PROPERTIES
   OUTPUT_NAME "push"
-  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
-)
+  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
