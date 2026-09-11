@@ -58,19 +58,13 @@ static int send_file(cahute_link *link, const cahute_u8 *data, long size)
 
     printf("Sending %ld bytes\n", size);
 
-    long sent = 0;
-    while (sent < size) {
-        /* CESG502 1.0.0.0 allows up to 4096 bytes per packet */
-        size_t chunk = size - sent > 4096 ? 4096 : size - sent;
-        err = cahute_send_on_link(link, data + sent, chunk);
-        if (err) {
-            fprintf(stderr, "error: Cannot send data: %s\n", cahute_get_error_name(err));
-            return err;
-        }
-        sent += chunk;
+    err = cahute_send_on_link(link, data, size);
+    if (err) {
+        fprintf(stderr, "error: Cannot send data: %s\n", cahute_get_error_name(err));
+        return err;
     }
 
-    printf("Sent %ld bytes\n", sent);
+    printf("Sent %ld bytes\n", size);
     return 0;
 }
 
