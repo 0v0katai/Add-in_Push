@@ -99,7 +99,6 @@ int main(void)
 
   cleanup:
     USB_ForceClose(1);
-    MMU_SetEnabled(false);
     Box2(2, 0);
     dtext(40, 72, 0x0000, "Aborted! Press MENU to return");
     dtext(40, 96, 0x0000, "to the main menu.");
