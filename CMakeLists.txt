@@ -16,6 +16,6 @@ target_link_options(push PRIVATE
 target_link_libraries(push PRIVATE -lc -lgcc -lsyscall-cg)
 
 if("${FXSDK_PLATFORM_LONG}" STREQUAL fxCG50)
-  generate_g3a(TARGET push VERSION "01.00.0000" OUTPUT "LinkApp2.g3a"
+  generate_g3a(TARGET push VERSION "01.01.0000" OUTPUT "LinkApp2.g3a"
     NAME "Add-in Push" ICONS assets-cg/icon-uns.png assets-cg/icon-sel.png)
 endif()
