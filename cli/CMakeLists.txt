@@ -13,7 +13,7 @@ FetchContent_Declare(cahute
   GIT_TAG develop)
 FetchContent_MakeAvailable(cahute)
 
-add_executable(push-cli main.c)
+add_executable(push-cli main.c timer.c)
 target_include_directories(push-cli PRIVATE
   "${cahute_SOURCE_DIR}/include"
   "${cahute_BINARY_DIR}/include")

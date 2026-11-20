@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <inttypes.h>
 
 static bool is_g3a(const uint8_t *buf, long len)
 {
@@ -58,13 +59,16 @@ static int send_file(cahute_link *link, const cahute_u8 *data, long size)
 
     printf("Sending %ld bytes\n", size);
 
+    extern uint64_t monotonic_time_ms(void);
+    uint64_t start = monotonic_time_ms();
     err = cahute_send_on_link(link, data, size);
+    uint64_t elapsed = monotonic_time_ms() - start;
     if (err) {
         fprintf(stderr, "error: Cannot send data: %s\n", cahute_get_error_name(err));
         return err;
     }
 
-    printf("Sent %ld bytes\n", size);
+    printf("Sent %ld bytes in %" PRIu64 " ms\n", size, elapsed);
     return 0;
 }
 
@@ -139,7 +143,7 @@ int main(int argc, char **argv)
 
     cahute_u8 *payload = filebuf;
     if (is_g3a(filebuf, fsize)) {
-        printf("Detected G3A add-in header; stripping 0x7000-byte prefix before sending.\n");
+        printf("Stripping G3A header\n");
         payload = filebuf + 0x7000;
         fsize -= 0x7000;
     }
