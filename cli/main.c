@@ -117,13 +117,6 @@ int main(int argc, char **argv)
 
     fseek(fp, 0, SEEK_END);
     long fsize = ftell(fp);
-    if (fsize > 6 * 1024 * 1024) {
-        fprintf(stderr, "error: File is too large (max 6MB)\n");
-        fclose(fp);
-        if (argc < 2)
-            free(file_path);
-        return 1;
-    }
     fseek(fp, 0, SEEK_SET);
 
     cahute_u8 *filebuf = malloc(fsize);
