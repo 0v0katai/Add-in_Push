@@ -29,5 +29,5 @@ else()
 endif()
 
 set_target_properties(push-cli PROPERTIES
-  OUTPUT_NAME "push"
+  OUTPUT_NAME "addin-push"
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
