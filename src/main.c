@@ -7,17 +7,16 @@
 #define dtext(x, y, color, str) \
     PrintMini(&(int){x}, &(int){y}, str, 0x42, -1, 0, 0, color, -1, 1, 0)
 
-int read_bin(u8 *out, int sz)
+int read_bin(u8 *out, u16 sz)
 {
     /* KEYSC register holding row #0, which is the AC key */
     u16 volatile *KEYSC_KIUDATA0 = (void *)0xa44b0000;
     
-    while (USB_PollRX() == 0) {
-        OS_InnerWait_ms(25);
+    while (USB_PollRX() == 0)
         if (*KEYSC_KIUDATA0 == 1)
             return -1;
-    }
-    short count = 0;
+
+    u16 count = 0;
     int rc = USB_Read(out, sz, &count);
     (void)rc;
     return count;
@@ -44,7 +43,7 @@ int main(void)
     static const char handshake[] = "USB loader ready";
     USB_Write((u8 *)handshake, sizeof(handshake));
 
-    size_t bin_size = 0;
+    u32 bin_size = 0;
     if (read_bin((u8 *)&bin_size, 4) == -1 || bin_size > 0x370000)
         goto cleanup;
 
@@ -73,12 +72,18 @@ int main(void)
     *MMUCR &= 0xffff03ff;
     __asm__("icbi @%0":: "r"(0xa0000000));
 
-    for (size_t pos = 0; pos < bin_size; pos += 0x100)
-        if (read_bin((u8 *)((u32)rom_virt + pos), 0x100) == -1)
+    u32 pos = 0;
+    while (pos < bin_size) {
+        u32 remaining = bin_size - pos;
+        int received = read_bin((u8 *)((u32)rom_virt + pos), 
+                                remaining > 0x2000 ? 0x2000 : remaining);
+        if (received == -1)
             goto cleanup;
+        pos += received;
+    }
     USB_ForceClose(1);
 
-    for(size_t offset = 0; offset < bin_size; offset += 32)
+    for(u32 offset = 0; offset < bin_size; offset += 32)
         __asm__ volatile("ocbwb @%0" :: "r"(rom_virt + offset));
 
     u32 volatile *CCR = (void *)0xff00001c;

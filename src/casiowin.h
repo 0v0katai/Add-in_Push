@@ -11,11 +11,11 @@ void PrintMini(int *x, int *y, char const *str_multibyte, int mode,
 void Box2(int size, int unknown);
 void OS_InnerWait_ms(int ms);
 int GetKey(int *key);
-int USB_Open(short param_1);
+int USB_Open(uint16_t param_1);
 int USB_ForceClose(int one);
-int USB_Read(unsigned char *out, int sz, short *count);
+int USB_Read(uint8_t *out, uint16_t sz, uint16_t *count);
 int USB_PollRX(void);
 int USB_ClearRX(void);
-int USB_Write(const unsigned char *buf, int count);
+int USB_Write(const uint8_t *buf, uint16_t count);
 
 #endif /* _CASIOWIN_H */
